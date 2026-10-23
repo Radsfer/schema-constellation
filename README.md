@@ -69,6 +69,16 @@ Sem essa distinção a ferramenta mente: ela reporta *"toda exclusão em `dim_ci
 
 ---
 
+## Abrindo num ângulo específico
+
+```bash
+node bin/cli.mjs open "docs/schema-3d.html?angulo=120"
+```
+
+O `?angulo=` fixa o azimute da câmera e desliga a rotação automática. Serve para
+mandar um link já posicionado e para capturar um quadro exato — o GIF acima foi gerado
+assim, 60 quadros de 6° em 6°.
+
 ## Rodando em 10 segundos
 
 Sem banco, sem configuração — com o exemplo que está no repo:

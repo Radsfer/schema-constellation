@@ -33,6 +33,8 @@
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, extent * 8);
   const HOME = { cam: new THREE.Vector3(0.62, 0.88, 1.22).normalize().multiplyScalar(FIT), tgt: new THREE.Vector3(0, 0, 0) };
   camera.position.copy(HOME.cam);
+
+
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   el.prepend(renderer.domElement);
@@ -46,6 +48,23 @@
   controls.zoomToCursor = true;
   controls.autoRotate = !REDUCED;
   controls.autoRotateSpeed = 0.4;
+
+  // Abrir num angulo fixo: schema-3d.html?angulo=120. Serve para capturar um
+  // quadro exato (o GIF do README) e para mandar um link ja posicionado.
+  // Usa query string, e nao hash, porque o hash ja carrega o filtro por tabela.
+  const paramAngulo = new URLSearchParams(location.search).get('angulo');
+  if (paramAngulo !== null && Number.isFinite(parseFloat(paramAngulo))) {
+    const distA = camera.position.length();
+    const elevacao = Math.asin(camera.position.y / distA);
+    const azimute = Math.atan2(camera.position.z, camera.position.x)
+      + (parseFloat(paramAngulo) * Math.PI) / 180;
+    camera.position.set(
+      Math.cos(azimute) * Math.cos(elevacao) * distA,
+      Math.sin(elevacao) * distA,
+      Math.sin(azimute) * Math.cos(elevacao) * distA,
+    );
+    controls.autoRotate = false;
+  }
   scene.add(new THREE.HemisphereLight('#dfe7f5', '#1a1f2a', 1.1));
   const sun = new THREE.DirectionalLight('#ffffff', 1.4);
   sun.position.set(20, 40, 15);
