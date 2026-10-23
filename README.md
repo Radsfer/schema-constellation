@@ -2,6 +2,10 @@
 
 **Um schema PostgreSQL vira uma constelação em 3D — e uma documentação por domínio.**
 
+![A constelação girando](assets/constelacao.gif)
+
+_O exemplo do repo: sete tabelas, seis domínios, nove relações. Cada tabela é um diamante; cada arco é uma FK. Os domínios se agrupam por força._
+
 ```bash
 npx schema-constellation render schema.sql --relations relations.yml --out docs/
 ```

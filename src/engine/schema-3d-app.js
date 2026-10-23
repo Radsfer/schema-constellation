@@ -19,14 +19,19 @@
   for (const fk of M.fks) inbound.set(fk.parent, (inbound.get(fk.parent) ?? 0) + 1);
   const hubs = new Set(M.hubs);
   const colorOf = (name) => domainByKey.get(tableByName.get(name).domain).color;
-  const extent = 16;   // o layout ja normaliza a constelacao para ~12 de raio
+  // A camera enquadra a constelacao pelo tamanho REAL dela: o raio da esfera que
+// envolve o conjunto divide pelo seno do meio campo de visao. Com um extent fixo,
+// um schema de 7 tabelas ficava cortado e um de 40 ficava minusculo.
+  const raio = Math.max(1, ...Object.values(L.pos).map((p) => Math.hypot(p.x, p.y || 0, p.z)));
+  const extent = Math.max(12, raio * 1.6);
+  const FIT = (raio / Math.sin((42 * Math.PI) / 360)) * 1.16;   // folga para os rotulos
 
   // ---------- scene ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0e1116');
   scene.fog = new THREE.Fog('#0e1116', extent * 2.4, extent * 5);
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, extent * 8);
-  const HOME = { cam: new THREE.Vector3(extent * 0.62, extent * 0.88, extent * 1.22), tgt: new THREE.Vector3(0, 0, 0) };
+  const HOME = { cam: new THREE.Vector3(0.62, 0.88, 1.22).normalize().multiplyScalar(FIT), tgt: new THREE.Vector3(0, 0, 0) };
   camera.position.copy(HOME.cam);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));

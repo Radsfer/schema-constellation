@@ -1,35 +1,91 @@
-# Exemplo mínimo — usado pelo smoke test do CI.
-# As três tabelas do mini.sql, com as relações declaradas.
+# Exemplo — usado pelo smoke test do CI e pelo GIF do README.
+# Um mart genérico: quatro dimensões, três fatos, sete tabelas.
 
 domains:
   - key: tempo
     title: Tempo
-    tables: [dim_calendario]
+    blurb: O calendário diário.
+    tables: [dim_tempo]
 
-  - key: territorio
-    title: Território
+  - key: local
+    title: Local
     tables: [dim_cidade]
+
+  - key: catalogo
+    title: Catálogo
+    tables: [dim_produto]
+
+  - key: clientes
+    title: Clientes
+    tables: [dim_cliente]
 
   - key: vendas
     title: Vendas
-    tables: [fato_venda]
+    blurb: Venda e meta, no mesmo grão de produto e mês.
+    tables: [fato_venda, fato_meta]
+
+  - key: devolucoes
+    title: Devoluções
+    tables: [fato_devolucao]
 
 relations:
   - from: fato_venda.data
-    to: dim_calendario.data
+    to: dim_tempo.data
     enforced: true
     why: O dia da venda. Toda análise é por competência.
 
   - from: fato_venda.cidade_id
     to: dim_cidade.cidade_id
     enforced: true
-    why: A cidade da venda.
+    why: A cidade em que a venda aconteceu.
+
+  - from: fato_venda.produto_id
+    to: dim_produto.produto_id
+    enforced: true
+    why: O produto vendido.
+
+  - from: fato_venda.cliente_id
+    to: dim_cliente.cliente_id
+    enforced: true
+    why: Quem comprou.
+
+  - from: fato_meta.data
+    to: dim_tempo.data
+    enforced: false
+    why: O mês de vigência da meta. Declarada, não imposta pelo banco.
+
+  - from: fato_meta.produto_id
+    to: dim_produto.produto_id
+    enforced: false
+    why: O produto a que a meta se refere.
+
+  - from: fato_devolucao.data
+    to: dim_tempo.data
+    enforced: true
+    why: O dia da devolução.
+
+  - from: fato_devolucao.produto_id
+    to: dim_produto.produto_id
+    enforced: true
+    why: O produto devolvido.
+
+  - from: fato_devolucao.cliente_id
+    to: dim_cliente.cliente_id
+    enforced: true
+    why: Quem devolveu.
 
 conventions:
-  - Valores monetários são NUMERIC.
-  - Datas são DATE, sem fuso.
+  - Valores monetários são NUMERIC, nunca ponto flutuante.
+  - Datas são DATE, sem fuso — o recorte é por competência diária.
+  - O grão da venda é dia × cidade × produto × cliente.
 
 accepted:
   - check: primary-key
     table: fato_venda
-    why: Fato sem chave natural única; a unicidade é por dia e cidade, testada fora do banco.
+    why: Fato sem chave natural única; a unicidade é o grão, garantido por UNIQUE.
+  - check: primary-key
+    table: fato_meta
+    why: Fato sem surrogate key; a unicidade é dia × produto.
+  - check: primary-key
+    table: fato_devolucao
+    why: Fato sem surrogate key; a unicidade é dia × produto × cliente.
