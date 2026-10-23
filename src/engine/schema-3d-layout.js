@@ -68,9 +68,9 @@ export function layout(model) {
     .filter((f) => idx.has(f.child) && idx.has(f.parent) && f.child !== f.parent)
     .map((f) => [idx.get(f.child), idx.get(f.parent)]);
 
-  const REP = 16;       // repulsao
+  const REP = 22;       // repulsao
   const SPRING = 0.12;  // rigidez da mola
-  const LEN = 4.5;      // comprimento de repouso
+  const LEN = 5.2;      // comprimento de repouso
   const DOM = 0.45;     // coesao de dominio
   const GRAV = 0.010;   // gravidade
 

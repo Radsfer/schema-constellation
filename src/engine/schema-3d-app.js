@@ -22,16 +22,30 @@
   // A camera enquadra a constelacao pelo tamanho REAL dela: o raio da esfera que
 // envolve o conjunto divide pelo seno do meio campo de visao. Com um extent fixo,
 // um schema de 7 tabelas ficava cortado e um de 40 ficava minusculo.
-  const raio = Math.max(1, ...Object.values(L.pos).map((p) => Math.hypot(p.x, p.y || 0, p.z)));
+  // O centro da camera e o CENTROIDE dos nos, nao a origem: o layout nao fica
+  // simetrico em torno de (0,0,0), e mirar a origem deixava a constelacao
+  // deslocada na tela com metade do quadro vazia.
+  const pts = Object.values(L.pos);
+  const centro = new THREE.Vector3(
+    pts.reduce((a, p) => a + p.x, 0) / pts.length,
+    pts.reduce((a, p) => a + (p.y || 0), 0) / pts.length,
+    pts.reduce((a, p) => a + p.z, 0) / pts.length,
+  );
+  // O raio tambem e medido a partir do centroide, senao um no outlier infla a
+  // esfera e encolhe todos os outros.
+  const raio = Math.max(1, ...pts.map((p) => Math.hypot(p.x - centro.x, (p.y || 0) - centro.y, p.z - centro.z)));
   const extent = Math.max(12, raio * 1.6);
-  const FIT = (raio / Math.sin((42 * Math.PI) / 360)) * 1.16;   // folga para os rotulos
+  const FIT = (raio / Math.sin((42 * Math.PI) / 360)) * 1.06;   // folga para os rotulos
 
   // ---------- scene ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0e1116');
   scene.fog = new THREE.Fog('#0e1116', extent * 2.4, extent * 5);
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, extent * 8);
-  const HOME = { cam: new THREE.Vector3(0.62, 0.88, 1.22).normalize().multiplyScalar(FIT), tgt: new THREE.Vector3(0, 0, 0) };
+  const HOME = {
+    cam: centro.clone().add(new THREE.Vector3(0.62, 0.88, 1.22).normalize().multiplyScalar(FIT)),
+    tgt: centro.clone(),
+  };
   camera.position.copy(HOME.cam);
 
 
@@ -47,6 +61,7 @@
   // a far corner of a big schema is a couple of wheel turns, not zoom-then-pan-then-zoom.
   controls.zoomToCursor = true;
   controls.autoRotate = !REDUCED;
+  controls.target.copy(HOME.tgt);
   controls.autoRotateSpeed = 0.4;
 
   // Abrir num angulo fixo: schema-3d.html?angulo=120. Serve para capturar um
