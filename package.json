@@ -1,0 +1,30 @@
+{
+  "name": "schema-constellation",
+  "version": "0.1.0",
+  "description": "Um schema PostgreSQL vira uma constelação em 3D — e uma documentação por domínio. Para data marts, onde as relações vivem no modelo semântico e não no banco.",
+  "type": "module",
+  "bin": {
+    "schema-constellation": "bin/cli.mjs"
+  },
+  "main": "src/relations.mjs",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "postgresql",
+    "schema",
+    "diagram",
+    "3d",
+    "data-mart",
+    "documentation",
+    "erd"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "libpg-query": "^17.6.0",
+    "three": "^0.185.1"
+  }
+}

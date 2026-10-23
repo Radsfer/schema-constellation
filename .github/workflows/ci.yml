@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+
+  smoke:
+    name: render de ponta a ponta
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+
+      # Gera a documentação a partir do exemplo mínimo. Falha se o exit code for
+      # diferente de 0 — o que acontece quando aparece um achado de severidade erro.
+      - name: render
+        run: node bin/cli.mjs render examples/mini.sql --relations examples/mini.relations.yml --out /tmp/docs
+
+      # O 3D precisa existir e ser autocontido: nenhuma referência a http.
+      - name: confere o 3D
+        run: |
+          set -e
+          ls -la /tmp/docs/schema-3d.html
+          test $(stat -c%s /tmp/docs/schema-3d.html) -gt 500000
+          if grep -qE '(src|href)="https?://' /tmp/docs/schema-3d.html; then
+            echo "o 3D nao pode depender da rede"
+            exit 1
+          fi
+          echo "ok: autocontido"

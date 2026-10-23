@@ -1,0 +1,8 @@
+# Normaliza fim de linha no repositorio. O parser do relations.yml já tolera CRLF,
+# mas manter LF no repo evita a classe de bug que aparece só na máquina Windows.
+* text=auto eol=lf
+
+# binários
+*.png binary
+*.jpg binary
+*.ico binary

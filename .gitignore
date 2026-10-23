@@ -1,0 +1,11 @@
+# dependencias
+node_modules/
+
+# saida gerada pelo render
+docs/
+_out/
+
+# temporarios
+_test*.sql
+_test*.json
+*.log

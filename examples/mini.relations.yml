@@ -1,0 +1,35 @@
+# Exemplo mínimo — usado pelo smoke test do CI.
+# As três tabelas do mini.sql, com as relações declaradas.
+
+domains:
+  - key: tempo
+    title: Tempo
+    tables: [dim_calendario]
+
+  - key: territorio
+    title: Território
+    tables: [dim_cidade]
+
+  - key: vendas
+    title: Vendas
+    tables: [fato_venda]
+
+relations:
+  - from: fato_venda.data
+    to: dim_calendario.data
+    enforced: true
+    why: O dia da venda. Toda análise é por competência.
+
+  - from: fato_venda.cidade_id
+    to: dim_cidade.cidade_id
+    enforced: true
+    why: A cidade da venda.
+
+conventions:
+  - Valores monetários são NUMERIC.
+  - Datas são DATE, sem fuso.
+
+accepted:
+  - check: primary-key
+    table: fato_venda
+    why: Fato sem chave natural única; a unicidade é por dia e cidade, testada fora do banco.

@@ -1,0 +1,51 @@
+# relations.yml — o que o schema-constellation precisa saber além do DDL.
+#
+# Num data mart as relações quase nunca existem no banco: elas moram no modelo
+# semântico (Power BI, dbt, LookML). Este arquivo é onde elas são declaradas.
+
+# ---------- domínios: viram ilhas e cores na constelação ----------
+domains:
+  - key: tempo
+    title: Tempo
+    blurb: O calendário. Carrega o mês anterior para o %MoM.
+    tables: [dim_calendario]
+
+  - key: territorio
+    title: Território
+    blurb: Cidade e regional. A regional é vigente no mês.
+    tables: [dim_cidade, dim_regional]
+
+  - key: fatos
+    title: Fatos
+    blurb: Os quatro fatos do modelo.
+    tables: [fato_venda, fato_pedido]
+
+# ---------- relações ----------
+#
+#   enforced: true   -> a FK existe no banco (constraint de verdade)
+#   enforced: false  -> A PENAS declarada; o banco não tem FK
+#
+# A diferença importa: com `false` o programa desenha o arco mas NÃO roda os
+# checks de constraint (índice, on-delete). Sem isso ele reclamaria de um
+# problema que não existe — que é o erro mais fácil de cometer numa ferramenta
+# que assume OLTP olhando um data warehouse.
+#
+# `why` não é enfeite: aparece na lista de relações e é o que sobrevive quando
+# alguém novo abre o modelo.
+
+relations:
+  - from: fato_venda.data
+    to: dim_calendario.data
+    enforced: false
+    why: O mês a que o registro pertence.
+
+  - from: fato_venda.cidade_id
+    to: dim_cidade.cidade_id
+    enforced: false
+    why: A cidade do registro. Dela sai a regional vigente no mês.
+
+# ---------- convenções: aparecem no topo da documentação ----------
+conventions:
+  - As chaves são geradas na camada de staging, não pelo banco.
+  - Valores monetários são NUMERIC, nunca ponto flutuante.
+  - Datas são DATE, sem fuso — o recorte é sempre por competência mensal.
